@@ -297,12 +297,6 @@ export interface DeployParametersOnlyOptions {
    * its currently-deployed value.
    */
   readonly parameters: { [name: string]: string };
-
-  /**
-   * IAM service role ARN for CloudFormation to use during the update
-   * @default - CloudFormation uses the stack's existing service role, if any
-   */
-  readonly roleArn?: string;
 }
 
 /**

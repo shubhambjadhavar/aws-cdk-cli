@@ -839,7 +839,6 @@ export class Toolkit extends CloudAssemblySourceBuilder {
         UsePreviousTemplate: true,
         Parameters: parameters,
         Capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-        RoleARN: options.roleArn,
       });
     } catch (e: any) {
       if (e.name === 'ValidationError' && /No updates are to be performed/.test(e.message ?? '')) {
