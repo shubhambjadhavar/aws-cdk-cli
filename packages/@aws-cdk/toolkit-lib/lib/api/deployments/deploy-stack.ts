@@ -749,16 +749,24 @@ class FullCloudFormationDeployment {
       finalState = successStack;
     } catch (e: any) {
       // Deployment errors get replaced by a diagnosis of the underlying resource failures, which says more.
-      // Any other error, and any failure to diagnose, leaves `e` to propagate as it is.
+      // Any other error, and any failure to diagnose, leaves `e` to propagate as it is. Diagnosis must run
+      // while the stack still exists (it describes the stack's current state), so this happens before
+      // cleanup - but its throw is captured rather than left to propagate immediately, so that a
+      // successful diagnosis can't skip the cleanup below.
+      let errorToThrow = e;
       if (ToolkitError.isDeploymentError(e)) {
-        await this.diagnoseDeploymentFailure(stackArn, monitor.errors);
+        try {
+          await this.diagnoseDeploymentFailure(stackArn, monitor.errors);
+        } catch (diagnosed: any) {
+          errorToThrow = diagnosed;
+        }
       }
 
       if (!this.update) {
         await this.deleteFailedCreation(stackArn);
       }
 
-      throw e;
+      throw errorToThrow;
     } finally {
       await monitor.stop();
     }
