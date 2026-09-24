@@ -7,8 +7,15 @@
  * unbounded retry layer for exactly that error class - it never retries anything else.
  */
 export function isThrottlingError(err: unknown): boolean {
-  const e = err as { name?: string; Code?: string; $metadata?: { httpStatusCode?: number } } | undefined;
-  return e?.name === 'Throttling' || e?.name === 'ThrottlingException' || e?.Code === 'Throttling';
+  let current: unknown = err;
+  for (let depth = 0; current && depth < 5; depth++) {
+    const e = current as { name?: string; Code?: string; cause?: unknown } | undefined;
+    if (e?.name === 'Throttling' || e?.name === 'ThrottlingException' || e?.Code === 'Throttling') {
+      return true;
+    }
+    current = e?.cause;
+  }
+  return false;
 }
 
 /**
